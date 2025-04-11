@@ -20,7 +20,7 @@ app.post('/api/fetch', async (req, res) => {
     const response = await axios.get(api, {
       params: { url },
       headers: {
-        'X-RapidAPI-Key': 'YOUR_RAPID_API_KEY',
+        'X-RapidAPI-Key': '5421f06801msh51425f4f279caa5p1aacdejsnbf429f452708',
         'X-RapidAPI-Host': 'instagram-downloader-api.p.rapidapi.com'
       }
     });
