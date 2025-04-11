@@ -1,39 +1,40 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
+const axios = require('axios');
+const path = require('path');
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
+// Serve frontend from /public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// API route
 app.post('/api/fetch', async (req, res) => {
+  try {
     const { url } = req.body;
-    if (!url) return res.status(400).json({ error: 'No URL provided' });
-
-    try {
-        const id = url.split("/p/")[1]?.split("/")[0] || url.split("/reel/")[1]?.split("/")[0];
-        const apiUrl = `https://www.instagram.com/p/${id}/?__a=1&__d=dis`;
-
-        const response = await axios.get(apiUrl, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0'
-            }
-        });
-
-        const media = response.data?.graphql?.shortcode_media;
-        if (!media) return res.status(404).json({ error: 'Media not found' });
-
-        const result = {
-            is_video: media.is_video,
-            media_url: media.is_video ? media.video_url : media.display_url
-        };
-
-        res.json(result);
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: 'Failed to fetch Instagram media' });
-    }
+    const api = `https://instagram-downloader-api.p.rapidapi.com/index`;
+    const response = await axios.get(api, {
+      params: { url },
+      headers: {
+        'X-RapidAPI-Key': 'YOUR_RAPID_API_KEY',
+        'X-RapidAPI-Host': 'instagram-downloader-api.p.rapidapi.com'
+      }
+    });
+    res.json(response.data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch media' });
+  }
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Handle other routes - fallback to index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
